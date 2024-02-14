@@ -34,9 +34,16 @@ type Input interface {
 type CyanInput struct{ Widget }
 type YellowInput struct{ Widget }
 
-func (et ErrText) Display()    { fmt.Println("\033[91m" + et.Text) }
-func (ct CyanText) Display()   { fmt.Println("\033[96m" + ct.Text) }
-func (yt YellowText) Display() { fmt.Println("\033[93m" + yt.Text) }
+func DisplayText(text string, color_code string, leave_color ...bool) {
+	fmt.Printf("\033[%s%s\n", color_code, text)
+	if len(leave_color) == 0 || !leave_color[0] {
+		fmt.Print("\033[0m")
+	}
+}
+
+func (et ErrText) Display()    { DisplayText(et.Text, "91m") }
+func (ct CyanText) Display()   { DisplayText(ct.Text, "96m") }
+func (yt YellowText) Display() { DisplayText(yt.Text, "93m") }
 func CreateET(err error) *ErrText {
 	return &ErrText{
 		Widget: Widget{Text: err.Error()}}
@@ -50,16 +57,16 @@ func CreateYT(text string) *YellowText {
 		Widget: Widget{Text: text}}
 }
 
-func (ci CyanInput) Display()   { fmt.Println("\033[96m" + ci.Text) }
-func (yi YellowInput) Display() { fmt.Println("\033[93m" + yi.Text) }
+func (ci CyanInput) Display()   { DisplayText(ci.Text, "96m", true) }
+func (yi YellowInput) Display() { DisplayText(yi.Text, "93m", true) }
 func (ci CyanInput) Read() string {
-	fmt.Println("\033[96m" + ci.Text)
+	ci.Display()
 	var s string
 	fmt.Scanln(&s)
 	return s
 }
 func (yi YellowInput) Read() string {
-	fmt.Println("\033[93m" + yi.Text)
+	yi.Display()
 	var s string
 	fmt.Scanln(&s)
 	return s
@@ -78,17 +85,25 @@ type SchemeManager struct {
 	Factory WidgetFactory
 }
 
-func MakeSchemeManager(scheme string) (*SchemeManager, error) {
-
+func MakeSchemeManager() *SchemeManager {
+	var scheme string
+	var err error = fmt.Errorf("")
 	var factory WidgetFactory
 
-	switch scheme {
-	case "Yellow":
-		factory = CreateYellowFactory()
-	case "Cyan":
-		factory = CreateCyanFactory()
-	default:
-		return nil, fmt.Errorf("\"%s\" is an Invalid Scheme", scheme)
+	for err != nil {
+		CreateET(err).Display()
+		fmt.Println("Choose which color you want the text to be displayed: \033[96mCyan \033[0mor \033[93mYellow\033[0m")
+		fmt.Scanln(&scheme)
+
+		switch scheme {
+		case "Yellow":
+			factory, err = CreateYellowFactory(), nil
+		case "Cyan":
+			factory, err = CreateCyanFactory(), nil
+		default:
+			err = fmt.Errorf("\"%s\" is an Invalid Scheme", scheme)
+		}
 	}
-	return &SchemeManager{Scheme: scheme, Factory: factory}, nil
+
+	return &SchemeManager{Scheme: scheme, Factory: factory}
 }

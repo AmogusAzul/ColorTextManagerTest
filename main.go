@@ -1,23 +1,26 @@
 package main
 
 import (
-	"Widget_Toolkit/interfaces"
 	"fmt"
+	"strconv"
+
+	"github.com/AmogusAzul/ColorTextManagerTest/interfaces"
 )
 
 func main() {
 
-	var scheme string
-	var scheme_manager *interfaces.SchemeManager
-	var err error = fmt.Errorf("")
+	var scheme_manager = interfaces.MakeSchemeManager()
 
-	for err != nil {
-		interfaces.CreateET(err).Display()
-		fmt.Print("Choose which color you want the text to be displayed: \033[96mCyan \033[0mor \033[93mYellow")
-		fmt.Scanln(&scheme)
-		scheme_manager, err = interfaces.MakeSchemeManager(scheme)
+	scheme_manager.Factory.CreateText("Basic sum").Display()
 
+	var a int
+	var b int
+	var erra error = fmt.Errorf("")
+	var errb error = fmt.Errorf("")
+	for erra != nil || errb != nil {
+		a, erra = strconv.Atoi(scheme_manager.Factory.CreateInput("First Number: ").Read())
+		b, errb = strconv.Atoi(scheme_manager.Factory.CreateInput("Second Number: ").Read())
 	}
 
-	fmt.Print(scheme_manager.Scheme)
+	scheme_manager.Factory.CreateText(fmt.Sprintf("Result: %d", a+b)).Display()
 }
